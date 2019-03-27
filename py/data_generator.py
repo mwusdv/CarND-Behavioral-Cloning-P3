@@ -10,11 +10,18 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.image as mpimg
+import cv2
+import math
+
+def gamma_correction(img, gamma=1.0):
+    table = np.array([((i/255.0)**gamma)*255 for i in range(256)], dtype=np.uint8)
+    return cv2.LUT(img, table)
 
 class DataGenerator:
-    def __init__(self, data_path, validation_ratio, batch_size):
-        csv_fname = os.path.join(data_path, 'driving_log.csv')
-        self._data_path = data_path
+    def __init__(self, param):
+        self._param = param
+        
+        csv_fname = os.path.join(param._data_path, 'driving_log.csv')
         self._df = pd.read_csv(csv_fname)
         
         indices = list(range(len(self._df)))
@@ -22,20 +29,20 @@ class DataGenerator:
         
         # indices for training and validation
         num_data = len(indices)
-        num_train = int(num_data * (1 - validation_ratio))
+        num_train = int(num_data * (1 - param._validation_ratio))
         num_valid = num_data - num_train
         self._train_indices = indices[:num_train]
         self._validation_indices = indices[num_train:]
         
-        self._batch_size = batch_size
+        batch_size = param._batch_size
         self._train_steps = num_train // batch_size
         self._valid_steps = num_valid // batch_size
         
-        self._train_generator = self.generator(self._batch_size, self._train_indices)
-        self._validation_generator = self.generator(self._batch_size, self._validation_indices)
+        self._train_generator = self.generator(batch_size, self._train_indices, is_training=True)
+        self._validation_generator = self.generator(batch_size, self._validation_indices)
         
     # data generator
-    def generator(self, batch_size, data_indices):
+    def generator(self, batch_size, data_indices, is_training=False):
         num_data = len(data_indices)
         
         while True:
@@ -45,20 +52,60 @@ class DataGenerator:
                 batch_indices = data_indices[offset : offset + batch_size]
                 
                 batch_images = []
-                batch_angles = []
+                batch_steering = []
                 
                 for idx in batch_indices:
                     for name in ['center', 'left', 'right']:
-                        img = mpimg.imread(os.path.join(self._data_path, (self._df[name][idx].strip())))
+                        img = mpimg.imread(os.path.join(self._param._data_path, (self._df[name][idx].strip())))
                         batch_images.append(img)
                     
-                    angle = self._df['steering'][idx]
-                    batch_angles.append(angle)
-                    batch_angles.append(angle + 0.35)
-                    batch_angles.append(angle - 0.35)
+                    steering = self._df['steering'][idx]
+                    batch_steering.append(steering)
+                    batch_steering.append(steering + 0.35)
+                    batch_steering.append(steering - 0.35)
                     
+                # data autmentation
+                if is_training:
+                    N = len(batch_images)
+                    for i in range(N):
+                        for t in range(self._param._n_transforms):
+                            transformed_img, transformed_steering = self.data_transform(batch_images[i], batch_steering[i])
+                            batch_images.append(transformed_img)
+                            batch_steering.append(transformed_steering)
+                            
                 X = np.array(batch_images)
-                y = np.array(batch_angles)
+                y = np.array(batch_steering)
+                
 
                 yield X, y
-                    
+    
+    def load_one_img(self):
+        idx = np.random.randint(0, len(self._df)-1)
+        img = mpimg.imread(os.path.join(self._param._data_path, (self._df['center'][idx].strip())))
+        return img
+        
+    def data_transform(self, img, steering):
+        # sheering
+        center_x = self._param._n_rows // 2
+        center_y = self._param._n_cols // 2
+        
+        src = np.array([[center_x, center_y], [center_x+5, center_y], [self._param._n_rows-1, center_x]], dtype=np.float32)
+        dst = np.copy(src)
+        delta = np.random.randint(-80, 80)
+        dst[0] += [delta, 0]
+        dst[1] += [delta, 0]
+            
+        shear_m = cv2.getAffineTransform(src, dst)
+        transformed_img  = cv2.warpAffine(img, shear_m, (self._param._n_cols, self._param._n_rows))
+        transformed_steering = steering + math.atan2(delta, center_y)
+        
+        # gamma correction
+        gamma = np.random.random() + 0.5
+        transformed_img = gamma_correction(transformed_img, gamma=gamma)
+                        
+        # flip
+        if np.random.random() > 0.5:
+            transformed_img = cv2.flip(transformed_img, flipCode=1)
+            transformed_steering = -transformed_steering
+        
+        return transformed_img, transformed_steering
