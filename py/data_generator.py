@@ -109,7 +109,7 @@ class DataGenerator:
         transformed_img = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
         
         # shadow
-        if np.random.random() > 0.5:
+        if np.random.random() < self._param._shadow_rate:
             row = np.random.randint(self._param._shadow_range[0], self._param._shadow_range[1])
             hsv = cv2.cvtColor(transformed_img[:row, :, :], cv2.COLOR_RGB2HSV)
             hsv[:, :, 2] = hsv[:, :, 2] * self._param._shadow_factor
@@ -121,7 +121,7 @@ class DataGenerator:
         transformed_img = cv2.warpAffine(transformed_img, trans_m, (n_cols, n_rows))
     
         # flip
-        if np.random.random() > 0.5:
+        if np.random.random() < self._param._flip_rate:
             transformed_img = cv2.flip(transformed_img, flipCode=1)
             transformed_steering = -transformed_steering
         

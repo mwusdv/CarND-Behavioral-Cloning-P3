@@ -32,10 +32,13 @@ class ExperimentParam:
         
         self._shadow_range = [80, 120]
         self._shadow_factor = 0.6
+        self._shadow_rate = 0.3
+        
+        self._flip_rate = 0.5
         
         # learning parameters
         self._learning_rate = 0.001
-        self._n_epochs = 30
+        self._n_epochs = 50
         self._batch_size = 16
         
         
