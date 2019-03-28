@@ -18,7 +18,7 @@ class ExperimentParam:
         
         # data generation and augmentation
         self._validation_ratio = 0.2
-        self._data_path =  '/home/mingrui/udacity/self-driving/CarND-Behavioral-Cloning-P3/data1/'
+        self._data_path =  '/home/mingrui/udacity/self-driving/CarND-Behavioral-Cloning-P3/data12/'
         self._n_transforms = 3
         
         # image processing
@@ -26,10 +26,13 @@ class ExperimentParam:
         self._bottom_crop = 20
         self._left_crop = 10
         self._right_crop = 10
+        self._shear_range = [-80, 80]
+        self._translation_range = 3
+        self._brightness_range = [0.7, 1.3]
         
         # learning parameters
-        self._learning_rate = 0.001
-        self._n_epochs = 20
+        self._learning_rate = 0.0001
+        self._n_epochs = 30
         self._batch_size = 32
         
         

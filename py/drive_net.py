@@ -26,21 +26,23 @@ def drive_net(param):
                                    (param._left_crop, param._right_crop)), 
                                    input_shape=(param._n_rows, param._n_cols, param._n_channels)))
     model.add(Conv2D(8, (1,1), activation='relu'))
+    model.add(Dropout(0.2))
       
     # conv layers
-    model.add(Conv2D(32, (5, 5), activation='relu'))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
     model.add(MaxPooling2D())
     
-    model.add(Conv2D(64, (5, 5), activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(MaxPooling2D())
     
-    model.add(Conv2D(128, (5, 5), activation='relu'))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
     model.add(MaxPooling2D())
     
     # fc layers
     model.add(Flatten())
+    model.add(Dropout(0.5))
     
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))

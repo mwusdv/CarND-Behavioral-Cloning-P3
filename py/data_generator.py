@@ -85,24 +85,34 @@ class DataGenerator:
         return img
         
     def data_transform(self, img, steering):
+        n_rows = self._param._n_rows
+        n_cols = self._param._n_cols
+        
         # sheering
-        center_x = self._param._n_rows // 2
-        center_y = self._param._n_cols // 2
+        center_x = n_rows // 2
+        center_y = n_cols // 2
         
         src = np.array([[center_x, center_y], [center_x+5, center_y], [self._param._n_rows-1, center_x]], dtype=np.float32)
         dst = np.copy(src)
-        delta = np.random.randint(-80, 80)
+        delta = np.random.randint(self._param._shear_range[0], self._param._shear_range[1])
         dst[0] += [delta, 0]
         dst[1] += [delta, 0]
             
         shear_m = cv2.getAffineTransform(src, dst)
-        transformed_img  = cv2.warpAffine(img, shear_m, (self._param._n_cols, self._param._n_rows))
+        transformed_img  = cv2.warpAffine(img, shear_m, (n_cols, n_rows))
         transformed_steering = steering + math.atan2(delta, center_y)
         
-        # gamma correction
-        gamma = np.random.random() + 0.5
-        transformed_img = gamma_correction(transformed_img, gamma=gamma)
+        # brightness change
+        hsv = cv2.cvtColor(transformed_img, cv2.COLOR_RGB2HSV)
+        v_factor = np.random.uniform(self._param._brightness_range[0], self._param._brightness_range[1])
+        hsv[:, :, 2] = hsv[:, :, 2] * v_factor
+        transformed_img = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
                         
+        # translation
+        tx, ty = np.random.uniform(-self._param._translation_range, self._param._translation_range, 2)
+        trans_m = np.array([[1, 0, tx], [0, 1, ty]], dtype=np.float32)
+        transformed_img = cv2.warpAffine(transformed_img, trans_m, (n_cols, n_rows))
+    
         # flip
         if np.random.random() > 0.5:
             transformed_img = cv2.flip(transformed_img, flipCode=1)
