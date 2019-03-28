@@ -107,7 +107,14 @@ class DataGenerator:
         v_factor = np.random.uniform(self._param._brightness_range[0], self._param._brightness_range[1])
         hsv[:, :, 2] = hsv[:, :, 2] * v_factor
         transformed_img = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
-                        
+        
+        # shadow
+        if np.random.random() > 0.5:
+            row = np.random.randint(self._param._shadow_range[0], self._param._shadow_range[1])
+            hsv = cv2.cvtColor(transformed_img[:row, :, :], cv2.COLOR_RGB2HSV)
+            hsv[:, :, 2] = hsv[:, :, 2] * self._param._shadow_factor
+            transformed_img[:row, :, :] = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+        
         # translation
         tx, ty = np.random.uniform(-self._param._translation_range, self._param._translation_range, 2)
         trans_m = np.array([[1, 0, tx], [0, 1, ty]], dtype=np.float32)

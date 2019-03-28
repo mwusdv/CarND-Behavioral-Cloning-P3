@@ -30,10 +30,13 @@ class ExperimentParam:
         self._translation_range = 3
         self._brightness_range = [0.7, 1.3]
         
+        self._shadow_range = [80, 120]
+        self._shadow_factor = 0.6
+        
         # learning parameters
-        self._learning_rate = 0.0001
+        self._learning_rate = 0.001
         self._n_epochs = 30
-        self._batch_size = 32
+        self._batch_size = 16
         
         
 
