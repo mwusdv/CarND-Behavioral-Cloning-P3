@@ -18,7 +18,7 @@ class ExperimentParam:
         
         # data generation and augmentation
         self._validation_ratio = 0.2
-        self._data_path =  '/home/mingrui/udacity/self-driving/CarND-Behavioral-Cloning-P3/data12/'
+        self._data_path =  '/home/mingrui/udacity/self-driving/CarND-Behavioral-Cloning-P3/data1/'
         self._n_transforms = 3
         
         # image processing
@@ -27,18 +27,21 @@ class ExperimentParam:
         self._left_crop = 10
         self._right_crop = 10
         self._shear_range = [-80, 80]
-        self._translation_range = 3
         self._brightness_range = [0.7, 1.3]
         
-        self._shadow_range = [80, 120]
+        self._horizontal_shadow_range = [80, 120]
+        self._vertical_shadow_range = [100, 220]
         self._shadow_factor = 0.6
-        self._shadow_rate = 0.3
-        
+        self._shadow_rate = 0.5
+       
+        self._scaling_range = [0.8, 1.0]
+        self._translation_range = 3
+       
         self._flip_rate = 0.5
         
         # learning parameters
         self._learning_rate = 0.001
-        self._n_epochs = 50
+        self._n_epochs = 10
         self._batch_size = 16
         
         
@@ -49,6 +52,7 @@ def train(param):
        
     # model graph
     model = drive_net(param)
+    model.summary()
     
     # training
     model.fit_generator(dg._train_generator, 
