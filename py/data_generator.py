@@ -82,7 +82,8 @@ class DataGenerator:
     def load_one_img(self):
         idx = np.random.randint(0, len(self._df)-1)
         img = mpimg.imread(os.path.join(self._param._data_path, (self._df['center'][idx].strip())))
-        return img
+        steering = self._df['steering'][idx]
+        return img, steering
         
     
     def data_transform(self, img, steering):
@@ -115,20 +116,19 @@ class DataGenerator:
         n_rows, n_cols = img.shape[:2]
             
         # sheering
-        center_x = n_rows // 2
-        center_y = n_cols // 2
+        center_x = n_cols // 2
+        center_y = n_rows // 2
         
-        src = np.array([[center_x, center_y], [center_x+5, center_y], [n_rows-1, center_x]], dtype=np.float32)
+        src = np.array([[center_x, center_y], [0, n_rows-1], [n_cols-1, n_rows-1]], dtype=np.float32)
         dst = np.copy(src)
         delta = np.random.randint(self._param._shear_range[0], self._param._shear_range[1])
         dst[0] += [delta, 0]
-        dst[1] += [delta, 0]
             
         shear_m = cv2.getAffineTransform(src, dst)
         transformed_img  = cv2.warpAffine(img, shear_m, (n_cols, n_rows))
         transfomred_steering = steering + math.atan2(delta, center_y)
         
-        return transformed_img, transfomred_steering
+        return transformed_img, transfomred_steering, delta
 
     # brightness change
     def change_brightness(self, img):
