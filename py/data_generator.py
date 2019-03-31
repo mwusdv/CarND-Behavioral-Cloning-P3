@@ -102,7 +102,7 @@ class DataGenerator:
         
         # scaling and translation
         transformed_img = self.scaling(transformed_img)
-        transformed_img = self.translation(transformed_img)
+        transformed_img, transformed_steering = self.translation(transformed_img, transformed_steering)
         
         # flip
         if np.random.random() < self._param._flip_rate:
@@ -119,17 +119,20 @@ class DataGenerator:
         center_x = n_cols // 2
         center_y = n_rows // 2
         
+        #src = np.array([[center_x, center_y], [center_x+5, center_y], [center_x, n_rows-1]], dtype=np.float32)
         src = np.array([[center_x, center_y], [0, n_rows-1], [n_cols-1, n_rows-1]], dtype=np.float32)
         dst = np.copy(src)
         delta = np.random.randint(self._param._shear_range[0], self._param._shear_range[1])
         dst[0] += [delta, 0]
+        #dst[1] += [delta, 0]
             
         shear_m = cv2.getAffineTransform(src, dst)
         transformed_img  = cv2.warpAffine(img, shear_m, (n_cols, n_rows))
         transfomred_steering = steering + math.atan2(delta, center_y)
         
-        return transformed_img, transfomred_steering, delta
+        return transformed_img, transfomred_steering
 
+    
     # brightness change
     def change_brightness(self, img):
         # brightness change
@@ -178,14 +181,16 @@ class DataGenerator:
         return o
     
     # translation
-    def translation(self, img):
+    def translation(self, img, steering):
         n_rows, n_cols = img.shape[:2]
         
-        tx, ty = np.random.uniform(-self._param._translation_range, self._param._translation_range, 2)
+        tx = np.random.uniform(-self._param._translation_range, self._param._translation_range)
+        ty = 0
         trans_m = np.array([[1, 0, tx], [0, 1, ty]], dtype=np.float32)
         transformed_img = cv2.warpAffine(img, trans_m, (n_cols, n_rows))
+        transformed_steering = steering + math.atan2(tx, n_rows/2)
         
-        return transformed_img
+        return transformed_img, transformed_steering
     
     
     def flip(self, img, steering):
