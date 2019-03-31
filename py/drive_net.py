@@ -25,23 +25,24 @@ def drive_net(param):
     model.add(Cropping2D(cropping=((param._top_crop, param._bottom_crop), 
                                    (param._left_crop, param._right_crop)), 
                                    input_shape=(param._n_rows, param._n_cols, param._n_channels)))
+    
     model.add(Conv2D(8, (1,1)))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.2))
       
     # conv layers
+    model.add(Conv2D(16, (3, 3), use_bias=False))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D())
+    
     model.add(Conv2D(32, (3, 3), use_bias=False))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D())
     
     model.add(Conv2D(64, (3, 3), use_bias=False))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D())
-    
-    model.add(Conv2D(128, (3, 3), use_bias=False))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D())

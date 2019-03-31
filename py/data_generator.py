@@ -87,7 +87,7 @@ class DataGenerator:
         
     
     def data_transform(self, img, steering):
-         # shearing
+        # shearing
         transformed_img, transformed_steering = self.shearing(img, steering)
         
         # brightness change
@@ -95,14 +95,10 @@ class DataGenerator:
         
         # shadow
         if np.random.random() < self._param._shadow_rate:
-            if np.random.random() < 0.5:
-                transformed_img = self.add_horizontal_shadow(transformed_img)
-            else:
-                transformed_img = self.add_vertical_shadow(transformed_img)
+            transformed_img = self.add_horizontal_shadow(transformed_img)
         
-        # scaling and translation
-        transformed_img = self.scaling(transformed_img)
-        transformed_img, transformed_steering = self.translation(transformed_img, transformed_steering)
+        # translation
+        transformed_img = self.translation(transformed_img)
         
         # flip
         if np.random.random() < self._param._flip_rate:
@@ -181,16 +177,14 @@ class DataGenerator:
         return o
     
     # translation
-    def translation(self, img, steering):
+    def translation(self, img):
         n_rows, n_cols = img.shape[:2]
         
-        tx = np.random.uniform(-self._param._translation_range, self._param._translation_range)
-        ty = 0
+        tx, ty = np.random.uniform(-self._param._translation_range, self._param._translation_range, 2)
         trans_m = np.array([[1, 0, tx], [0, 1, ty]], dtype=np.float32)
         transformed_img = cv2.warpAffine(img, trans_m, (n_cols, n_rows))
-        transformed_steering = steering + math.atan2(tx, n_rows/2)
         
-        return transformed_img, transformed_steering
+        return transformed_img
     
     
     def flip(self, img, steering):
