@@ -166,4 +166,4 @@ Note that the translation amount is within 3 pixels, so the difference between t
 
 ## Results
 
-The model with the above described architecture is trained with the augmented data described above can drive automously very well on both tracks. The video recordings on both tracks, track1.mp4 and track2.mp4, are included in the repository.
+The model with the above described architecture is trained with the augmented data described above. The vehicle can drive automously very well on both tracks. And the video recordings on both tracks, track1.mp4 and track2.mp4, are included in the repository.
